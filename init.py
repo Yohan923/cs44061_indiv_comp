@@ -9,6 +9,7 @@ from constants import FEATURE_COLUMNS, CATEGORICAL_FEATURE_KEYS, NUMERIC_FEATURE
 if __name__ == '__main__':
 
     data_set = data_loader.load_data()
+
     #data_set = data_loader.load_from_csv()
 
     reg = linear_model.LinearRegression()
