@@ -1,6 +1,7 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -51,9 +52,9 @@ def preprocessing(data_X, data_Y=None, categories=[]):
 
     ordinal_X = ordinal_enc.fit_transform(ordinal_X)
     onehot_X = onehot.fit_transform(onehot_X).toarray()
-    # binary_ordinal_X = binary.fit_transform(ordinal_X)
+    binary_ordinal_X = binary.fit_transform(ordinal_X)
 
-    return np.concatenate([numerical_X, onehot_X, ordinal_X], axis=1)
+    return np.concatenate([numerical_X, onehot_X, binary_ordinal_X], axis=1)
 
 
 if __name__ == '__main__':
@@ -80,10 +81,10 @@ if __name__ == '__main__':
     X_test = preprocessing(X_test, categories=tmp_l)
     X_pred = preprocessing(data_set["pred_X"].values, categories=tmp_l)
 
-    poly = ('poly', PolynomialFeatures(degree=2))
-    linear = ('linear', LinearRegression(fit_intercept=True, normalize=False))
+    # poly = ('poly', PolynomialFeatures(degree=2))
+    linear = LinearRegression(fit_intercept=False, normalize=False)
 
-    model = Pipeline([linear])
+    model = linear
 
     model = model.fit(X_train, y_train)
 
