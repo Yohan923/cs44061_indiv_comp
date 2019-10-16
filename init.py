@@ -2,9 +2,10 @@ import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LinearRegression, Lasso, Ridge, LassoCV, RidgeCV
+from sklearn.linear_model import LinearRegression, LassoCV
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler, PowerTransformer, PolynomialFeatures
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, RobustScaler, PolynomialFeatures
 
 import data_loader
 from constants import NUMERIC_FEATURE_KEYS, ONEHOT_CATEGORICAL_FEATURE_KEYS, LABEL_CATEGORICAL_FEATURE_KEYS
@@ -36,7 +37,7 @@ def preprocessing(data_X, data_Y=None, categories=[]):
     num_impute = SimpleImputer()
     numerical_X = num_impute.fit_transform(numerical_X)
 
-    power = PowerTransformer()
+    # power = PowerTransformer()
     robust = RobustScaler()
     numerical_X = robust.fit_transform(numerical_X)
 
@@ -46,7 +47,7 @@ def preprocessing(data_X, data_Y=None, categories=[]):
     ordinal_X = cat_impute.fit_transform(ordinal_X)
 
     ordinal_enc = OrdinalEncoder()
-    binary = ce.binary.BinaryEncoder(cols=[i for i in range(len(LABEL_CATEGORICAL_FEATURE_KEYS))])
+    binary = ce.binary.BinaryEncoder(cols=[j for j in range(len(LABEL_CATEGORICAL_FEATURE_KEYS))])
     onehot = OneHotEncoder(categories=categories, handle_unknown='ignore')
 
     ordinal_X = ordinal_enc.fit_transform(ordinal_X)
@@ -88,13 +89,13 @@ if __name__ == '__main__':
     X_test = preprocessing(X_test, categories=tmp_l)
     X_pred = preprocessing(data_set["pred_X"].values, categories=tmp_l)
 
-    poly = PolynomialFeatures(degree=3)
+    poly = PolynomialFeatures(degree=2)
     X_train = poly.fit_transform(X_train)
     X_test = poly.fit_transform(X_test)
     X_pred = poly.fit_transform(X_pred)
 
     linear = LinearRegression(fit_intercept=False, normalize=False)
-    ridge = RidgeCV()
+    # ridge = RidgeCV()
     lasso = LassoCV(n_alphas=1000)
 
     model = lasso
@@ -104,11 +105,14 @@ if __name__ == '__main__':
     train = model.predict(X_train)
     test = model.predict(X_test)
 
-    error1 = (1 / 2 * (len(y_test))) * np.sum(np.square(test - y_test))
-    error2 = (1 / 2 * (len(y_test))) * np.sum(np.square(train - y_train))
+    error1 = mean_squared_error(y_train, train)
+    error2 = mean_squared_error(y_test, test)
+
+    # error1 = (1 / 2 * (len(y_test))) * np.sum(np.square(test - y_test))
+    # error2 = (1 / 2 * (len(y_test))) * np.sum(np.square(train - y_train))
 
     pred = model.predict(X_pred)
 
-    pd.DataFrame(pred).to_csv("testing2.csv")
+    pd.DataFrame(pred).to_csv("result.csv")
 
     print("finished")
